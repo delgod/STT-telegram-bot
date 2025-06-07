@@ -9,7 +9,7 @@ SONIOX_TOKEN = "<API-KEY-HERE>"
 ALLOW_LIST = ["delgod"]
 
 http = urllib3.PoolManager()
-headers = {"Authorization": f"Bearer {SONIOX_TOKEN}", "User-Agent": "urllib3-client"}
+headers = {"Authorization": f"Bearer {SONIOX_TOKEN}"}
 
 
 def poll_until_complete(transcription_id):
