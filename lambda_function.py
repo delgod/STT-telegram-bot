@@ -145,6 +145,13 @@ def lambda_handler(event, _):
         file_content = get_file(file_id)
         reply_message = transcribe(file_content, file_type)
 
+    if "video_note" in body["message"]:
+        file_id = body["message"]["video_note"]["file_id"]
+        file_type = "video/mp4"
+        file_content = get_file(file_id)
+        reply_message = transcribe(file_content, file_type)
+
+
     send_reply(chat_id, reply_message)
 
     return {"statusCode": 200, "body": json.dumps(reply_message)}
