@@ -30,14 +30,14 @@ def poll_until_complete(transcription_id):
     return "Transcription timeout"
 
 
-def transcribe(file_content):
+def transcribe(file_content, file_type):
     # Upload voice file
     body, content_type = encode_multipart_formdata(
         {
             "file": (
-                "file.ogg",
+                "file",
                 file_content,
-                "audio/ogg",
+                file_type,
             )
         }
     )
@@ -128,15 +128,22 @@ def lambda_handler(event, _):
     if user_id not in ALLOW_LIST:
         return {"statusCode": 200, "body": json.dumps(f"{user_id} is unauthorized")}
 
-    reply_message = "Reply to empty"
+    reply_message = "Reply to empty: " + json.dumps(body["message"])
     if "text" in body["message"]:
         message_text = body["message"]["text"]
         reply_message = f"Reply to text: {message_text}"
 
     if "voice" in body["message"]:
         file_id = body["message"]["voice"]["file_id"]
+        file_type = body["message"]["voice"]["mime_type"]
         file_content = get_file(file_id)
-        reply_message = transcribe(file_content)
+        reply_message = transcribe(file_content, file_type)
+
+    if "video" in body["message"]:
+        file_id = body["message"]["video"]["file_id"]
+        file_type = body["message"]["video"]["mime_type"]
+        file_content = get_file(file_id)
+        reply_message = transcribe(file_content, file_type)
 
     send_reply(chat_id, reply_message)
 
