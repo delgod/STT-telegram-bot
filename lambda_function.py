@@ -101,11 +101,13 @@ def get_file(file_id):
     url1 = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/getFile?file_id={file_id}"
     response1 = http.request("GET", url1)
     data = json.loads(response1.data.decode("utf-8"))
+    if response1.status >= 400:
+        return response1.status, response1.data.decode("utf-8")
     remote_file_path = data["result"]["file_path"]
 
     url2 = f"https://api.telegram.org/file/bot{TELEGRAM_TOKEN}/{remote_file_path}"
     response2 = http.request("GET", url2)
-    return response2.data
+    return response2.status, response2.data
 
 
 def send_reply(chat_id, message):
@@ -136,22 +138,26 @@ def lambda_handler(event, _):
     if "voice" in body["message"]:
         file_id = body["message"]["voice"]["file_id"]
         file_type = body["message"]["voice"]["mime_type"]
-        file_content = get_file(file_id)
-        reply_message = transcribe(file_content, file_type)
+        response_code, file_content = get_file(file_id)
+        reply_message = f"HTTP {response_code} Error: {file_content[0:100]}"
+        if response_code == 200:
+            reply_message = transcribe(file_content, file_type)
 
     if "video" in body["message"]:
         file_id = body["message"]["video"]["file_id"]
         file_type = body["message"]["video"]["mime_type"]
-        file_content = get_file(file_id)
-        reply_message = transcribe(file_content, file_type)
+        response_code, file_content = get_file(file_id)
+        reply_message = f"HTTP {response_code} Error: {file_content[0:100]}"
+        if response_code == 200:
+            reply_message = transcribe(file_content, file_type)
 
     if "video_note" in body["message"]:
         file_id = body["message"]["video_note"]["file_id"]
         file_type = "video/mp4"
-        file_content = get_file(file_id)
-        reply_message = transcribe(file_content, file_type)
-
+        response_code, file_content = get_file(file_id)
+        reply_message = f"HTTP {response_code} Error: {file_content[0:100]}"
+        if response_code == 200:
+            reply_message = transcribe(file_content, file_type)
 
     send_reply(chat_id, reply_message)
-
     return {"statusCode": 200, "body": json.dumps(reply_message)}
