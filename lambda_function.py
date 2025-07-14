@@ -209,13 +209,13 @@ def handle_media_message(message: dict) -> str:
     file_type = "application/octet-stream"  # Default MIME type
 
     if "voice" in message:
-        file_id = message["voice"]["file_id"]
-        file_type = message["voice"].get("mime_type", "audio/ogg")
+        file_id = message.get("voice", {}).get("file_id")
+        file_type = message.get("voice", {}).get("mime_type", "audio/ogg")
     elif "video" in message:
-        file_id = message["video"]["file_id"]
-        file_type = message["video"].get("mime_type", "video/mp4")
+        file_id = message.get("video", {}).get("file_id")
+        file_type = message.get("video", {}).get("mime_type", "video/mp4")
     elif "video_note" in message:
-        file_id = message["video_note"]["file_id"]
+        file_id = message.get("video_note", {}).get("file_id")
         file_type = "video/mp4"  # video_note is always mp4
     else:
         return "Unsupported message type."
